@@ -1,54 +1,56 @@
-name: Deploy Marina AI Bot
+name: Marina AI Bot Setup
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  setup:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 🚀 Checkout code
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: ⎔ Setup Node.js
+    - name: 🟢 Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
 
-    - name: 📥 Generate package-lock.json
+    - name: 📦 Install dependencies (using npm install)
       run: |
-        if [ ! -f "package-lock.json" ]; then
-          echo "📝 Generating package-lock.json..."
-          npm install --package-lock-only
-        fi
+        echo "Installing dependencies..."
+        npm install
+        echo "✅ Dependencies installed successfully"
 
-    - name: 📦 Install dependencies
-      run: npm ci
-
-    - name: 🔍 Run basic checks
+    - name: 🔍 Verify installation
       run: |
-        echo "✅ Node.js version: $(node --version)"
-        echo "✅ NPM version: $(npm --version)"
-        echo "✅ Checking if bot starts..."
-        node -e "console.log('🟢 Basic check passed')"
-
-    - name: 🏗️ Build project
-      run: |
-        if [ -f "package.json" ] && grep -q '"build"' package.json; then
-          npm run build
-        else
-          echo "📁 No build script found, skipping build"
-        fi
-
-    - name: 📤 Deploy to server
-      run: |
-        echo "🚀 Marina AI Bot deployment ready!"
-        echo "📁 Files checked:"
+        echo "📁 Project structure:"
         ls -la
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        echo ""
+        echo "✅ Node.js: $(node --version)"
+        echo "✅ npm: $(npm --version)"
+        echo ""
+        echo "📦 Installed packages:"
+        npm list --depth=0
+
+    - name: 🧪 Test bot setup
+      run: |
+        echo "Testing imports..."
+        node -e "
+        try {
+          const axios = require('axios');
+          const dotenv = require('dotenv');
+          console.log('✅ All imports successful');
+          console.log('🎯 Marina AI Bot ready!');
+        } catch (error) {
+          console.error('❌ Import error:', error.message);
+          process.exit(1);
+        }
+        "
+
+    - name: 🚀 Success
+      run: |
+        echo "🎉 Marina AI Bot setup completed!"
+        echo "💖 Ready for deployment!"
