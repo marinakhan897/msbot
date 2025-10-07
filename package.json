@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "test": "echo 'Bot Testing'"
-  },
-  "dependencies": {
-    "axios": "^1.6.0"
+    "start": "node bot.js"
   }
 }
