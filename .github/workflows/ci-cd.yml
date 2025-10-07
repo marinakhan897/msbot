@@ -1,0 +1,58 @@
+name: CI/CD for Marina AI
+
+on:
+  push:
+    branches: [ main, master, development ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: |
+        npm ci
+        npm audit fix
+
+    - name: 🔍 ESLint Check
+      run: |
+        npx eslint marina-bot.js --fix || true
+
+    - name: ✅ Security Audit
+      run: |
+        npm audit
+        npx snyk test --dev
+
+    - name: 📊 Code Coverage
+      run: |
+        npx nyc npm test
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: 📈 Upload coverage
+      uses: codecov/codecov-action@v3
+
+  deploy-production:
+    needs: quality-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 🚀 Deploy to Production
+      run: |
+        echo "🎯 Deploying Marina AI Bot to Production..."
+        # Add your production deployment script
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        NODE_ENV: production
