@@ -7,12 +7,11 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.0",
-    "dotenv": "^16.3.0",
-    "fca-unofficial": "^1.4.6"
+    "dotenv": "^16.3.0"
   },
   "scripts": {
     "start": "node marina-bot.js",
-    "dev": "nodemon marina-bot.js"
+    "test": "echo 'No tests yet' && exit 0"
   },
   "engines": {
     "node": ">=16.0.0"
