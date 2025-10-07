@@ -13,5 +13,8 @@
   "scripts": {
     "start": "node marina-bot.js",
     "dev": "nodemon marina-bot.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
