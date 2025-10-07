@@ -1,0 +1,94 @@
+name: 🎀 Marina Bot Live Monitor
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes
+
+jobs:
+  live-monitor:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: 📦 Install dependencies
+      run: npm install
+
+    - name: 🚀 Start Marina Bot with logging
+      run: |
+        echo "🎀 STARTING MARINA KHAN AI BOT LIVE MONITOR"
+        echo "==========================================="
+        timeout 30s node bot.js || echo "✅ Bot session completed"
+        echo ""
+        echo "📊 MESSAGE SUMMARY:"
+        echo "=================="
+        
+    - name: 📈 Show Live Message Logs
+      run: |
+        if [ -f "message-logs.json" ]; then
+          echo "💌 LIVE MESSAGE ACTIVITY:"
+          echo "========================="
+          node -e "
+          const logs = require('./message-logs.json');
+          logs.forEach(log => {
+            const time = new Date(log.timestamp).toLocaleTimeString();
+            const emoji = log.type === 'received' ? '📩' : log.type === 'sent' ? '💌' : '⚠️';
+            const status = log.status === 'seen' ? '👀 SEEN' : log.status === 'replied' ? '🤖 REPLIED' : '⏳ ' + log.status;
+            console.log(\\\`\\\${emoji} [\\\${time}] \\\${status} | \\\${log.user}: \\\"\\\${log.message}\\\"\\\`);
+          });
+          console.log(\\\"\\n📈 TOTAL MESSAGES PROCESSED: \\\" + logs.length);
+          "
+        else
+          echo "⏳ No messages yet. Bot is waiting..."
+        fi
+
+    - name: 📊 Generate Report
+      run: |
+        echo "## 🎀 Marina Khan AI Bot - Live Report" >> $GITHUB_STEP_SUMMARY
+        echo "### ⏰ Generated at: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📈 Activity Summary" >> $GITHUB_STEP_SUMMARY
+        if [ -f "message-logs.json" ]; then
+          node -e "
+          const logs = require('./message-logs.json');
+          const received = logs.filter(l => l.type === 'received').length;
+          const sent = logs.filter(l => l.type === 'sent').length;
+          const seen = logs.filter(l => l.status === 'seen').length;
+          const replied = logs.filter(l => l.status === 'replied').length;
+          
+          console.log(\\\"- 📩 Messages Received: \\\" + received + \\\"\\\");
+          console.log(\\\"- 💌 Messages Sent: \\\" + sent + \\\"\\\");
+          console.log(\\\"- 👀 Messages Seen: \\\" + seen + \\\"\\\");
+          console.log(\\\"- 🤖 Messages Replied: \\\" + replied + \\\"\\\");
+          console.log(\\\"- 📊 Total Activity: \\\" + logs.length + \\\" events\\\");
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- ⏳ No activity yet" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔄 Recent Activity" >> $GITHUB_STEP_SUMMARY
+        if [ -f "message-logs.json" ]; then
+          node -e "
+          const logs = require('./message-logs.json');
+          const recent = logs.slice(-5);
+          recent.forEach(log => {
+            const time = new Date(log.timestamp).toLocaleTimeString();
+            const status = log.status === 'seen' ? '👀' : log.status === 'replied' ? '🤖' : '⏳';
+            console.log(\\\"- \\\" + status + \\\" [\\\" + time + \\\"] \\\" + log.user + \\\": \\\" + log.message + \\\"\\\");
+          });
+          " >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: ✅ Success
+      run: |
+        echo "🎉 MARINA BOT LIVE MONITOR COMPLETED!"
+        echo "💖 Check the summary above for detailed activity"
